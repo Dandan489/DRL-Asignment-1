@@ -9,8 +9,9 @@ import pickle
 
 def comp_diff(x, y):
     ret = 0
-    if x > y: ret = 1
-    elif x < y: ret = -1
+    # if x > y: ret = 1
+    # elif x < y: ret = -1
+    ret = x - y
     return ret
 
 # stage 0: find passenger
