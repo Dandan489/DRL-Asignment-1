@@ -71,7 +71,7 @@ def train_agent(agent_file, env_config, render=False):
     stations = [(0, 0), (0, 4), (4, 0), (4,4)]
     
     q_table = {}
-    episodes = 20000
+    episodes = 100000
     epsilon = 1
     rewards_per_episode = []
     
