@@ -70,19 +70,20 @@ def train_agent(agent_file, env_config, render=False):
     stations = [(0, 0), (0, 4), (4, 0), (4,4)]
     
     q_table = {}
-    episodes = 10000
+    episodes = 20000
     epsilon = 1
     rewards_per_episode = []
     
     alpha = 0.1
     gamma = 0.99
     epsilon_end = 0.1
-    decay_rate = 0.9997
+    decay_rate = 0.99995
     doneCnt = 0
     pickCnt = 0
     
     for episode in range(episodes):
         obs, _ = env.reset()
+        env.place_random_obstacles(15)
 
         total_reward = 0
         done = False

@@ -14,7 +14,7 @@ import random
 
 
 class SimpleTaxiEnv():
-    def __init__(self, grid_size=5, fuel_limit=50):
+    def __init__(self, grid_size=10, fuel_limit=50):
         """
         Custom Taxi environment supporting different grid sizes.
         """
@@ -50,6 +50,15 @@ class SimpleTaxiEnv():
         
         return self.get_state(), {}
 
+    def place_random_obstacles(self, num_obstacles):
+        """Randomly places obstacles in the environment."""
+        available_positions = [
+            (x, y) for x in range(self.grid_size) for y in range(self.grid_size)
+            if (x, y) not in self.stations and (x, y) != self.taxi_pos and (x, y) != self.passenger_loc and (x, y) != self.destination
+        ]
+
+        self.obstacles = set(random.sample(available_positions, min(num_obstacles, len(available_positions))))
+    
     def step(self, action):
         """Perform an action and update the environment state."""
         taxi_row, taxi_col = self.taxi_pos
@@ -143,9 +152,9 @@ class SimpleTaxiEnv():
         
         
         grid[0][0]='R'
-        grid[0][4]='G'
-        grid[4][0]='Y'
-        grid[4][4]='B'
+        grid[0][9]='G'
+        grid[9][0]='Y'
+        grid[9][9]='B'
         '''
         # Place destination
         dy, dx = destination_pos
@@ -156,6 +165,9 @@ class SimpleTaxiEnv():
         ty, tx = taxi_pos
         if 0 <= tx < self.grid_size and 0 <= ty < self.grid_size:
             grid[ty][tx] = '🚖'
+            
+        for ox, oy in self.obstacles:
+            grid[ox][oy] = 'X'
 
         # Print step info
         print(f"\nStep: {step}")
@@ -183,6 +195,7 @@ def run_agent(agent_file, env_config, render=False):
 
     env = SimpleTaxiEnv(**env_config)
     obs, _ = env.reset()
+    env.place_random_obstacles(15)
     total_reward = 0
     done = False
     step_count = 0
