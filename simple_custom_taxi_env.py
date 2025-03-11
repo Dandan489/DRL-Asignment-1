@@ -34,7 +34,15 @@ class SimpleTaxiEnv():
         self.current_fuel = self.fuel_limit
         self.passenger_picked_up = False
         
-
+        self.stations = list()
+        
+        available_positions = [
+            (x, y) for x in range(self.grid_size) for y in range(self.grid_size)
+            if (x, y) not in self.stations and (x, y) not in self.obstacles
+        ]
+        
+        self.stations = list(random.sample(available_positions, 4))
+        
         available_positions = [
             (x, y) for x in range(self.grid_size) for y in range(self.grid_size)
             if (x, y) not in self.stations and (x, y) not in self.obstacles
@@ -150,11 +158,9 @@ class SimpleTaxiEnv():
             grid[py][px] = 'P'
         '''
         
-        
-        grid[0][0]='R'
-        grid[0][9]='G'
-        grid[9][0]='Y'
-        grid[9][9]='B'
+        for ox, oy in self.stations:
+            grid[ox][oy] = 'S'
+            
         '''
         # Place destination
         dy, dx = destination_pos
@@ -195,7 +201,7 @@ def run_agent(agent_file, env_config, render=False):
 
     env = SimpleTaxiEnv(**env_config)
     obs, _ = env.reset()
-    env.place_random_obstacles(15)
+    env.place_random_obstacles(20)
     total_reward = 0
     done = False
     step_count = 0

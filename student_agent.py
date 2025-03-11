@@ -20,6 +20,8 @@ with open("data.pkl", "rb") as f:
 
 stage = 0
 substage = 0
+past_obs = np.zeros(9)
+destiny = -1
 
 def random_pick(obs):
     possible_actions = [0, 1, 2, 3]
@@ -45,11 +47,11 @@ def comp_diff(x, y):
     ret = x - y
     return ret
 
-def refine_obs(obs, stage, substage):
+def refine_obs(obs, stage, substage, past_obs):
     taxi_x = obs[0]
     taxi_y = obs[1]
     
-    new_obs = [0] * 5
+    new_obs = [0] * 9
     
     if(substage == 0):
         new_obs[0] = (comp_diff(taxi_x, obs[2]), comp_diff(taxi_y, obs[3]))
@@ -62,6 +64,8 @@ def refine_obs(obs, stage, substage):
         
     new_obs[1:5] = obs[10:14]
     
+    new_obs[5:9] = past_obs[1:5]
+    
     return tuple(new_obs)
 
 def get_action(obs):
@@ -73,18 +77,21 @@ def get_action(obs):
     #       Otherwise, even if your agent performs well in training, it may fail during testing.
     global stage
     global substage
+    global past_obs
+    global destiny
     if stage is None:
         stage = 0
     if substage is None:
         substage = 0
+    if past_obs is None:
+        past_obs = np.zeros(9)
+    if destiny is None:
+        destiny = -1
     
-    reached = 0
-    if(stage < 2):
-        reached = obs[14]
-    else:
-        reached = obs[15]
+    reached1 = obs[14]
+    reached2 = obs[15]
     
-    temp_obs = refine_obs(obs, stage, substage)
+    temp_obs = refine_obs(obs, stage, substage, past_obs)
     
     possible_actions = [0, 1, 2, 3]
                 
@@ -99,21 +106,24 @@ def get_action(obs):
     
     if(stage == 0):
         if(temp_obs[0] == (0, 0)):
-            if(reached == 1):
+            if(reached2 == 1):
+                destiny = substage
+            if(reached1 == 1):
                 stage = 1
             else:
                 substage += 1
     elif(stage == 1):
         stage = 2
-        substage = 0
+        if(destiny != -1):
+            substage = destiny
     elif(stage == 2):
         if(temp_obs[0] == (0, 0)):
-            if(reached == 1):
+            if(reached2 == 1):
                 stage = 3
             else:
                 substage += 1
     
-    ref_obs = refine_obs(obs, stage, substage)
+    ref_obs = refine_obs(obs, stage, substage, past_obs)
 
     action = 0
     if stage == 1:
@@ -123,10 +133,12 @@ def get_action(obs):
     else:
         if(ref_obs in Q_table):
             action = np.argmax(Q_table[ref_obs])
-            if (np.random.rand() < 0.1) or (action not in possible_actions):
+            if (np.random.rand() < 0.1) or (action not in possible_actions) or action == 5 or action == 4:
                 action = random_pick(obs)
         else:
             action = random_pick(obs)
+    
+    past_obs = obs
     
     return action
 

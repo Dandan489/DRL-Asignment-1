@@ -35,11 +35,11 @@ def comp_diff(x, y):
 # walls * 4
 
 
-def refine_obs(obs, stage, substage):
+def refine_obs(obs, stage, substage, past_obs):
     taxi_x = obs[0]
     taxi_y = obs[1]
     
-    new_obs = [0] * 5
+    new_obs = [0] * 9
     
     if(substage == 0):
         new_obs[0] = (comp_diff(taxi_x, obs[2]), comp_diff(taxi_y, obs[3]))
@@ -49,15 +49,10 @@ def refine_obs(obs, stage, substage):
         new_obs[0] = (comp_diff(taxi_x, obs[6]), comp_diff(taxi_y, obs[7]))
     else:
         new_obs[0] = (comp_diff(taxi_x, obs[8]), comp_diff(taxi_y, obs[9]))
-        
-    # if(stage < 2):
-    #     new_obs[1] = obs[14]
-    # else:
-    #     new_obs[1] = obs[15]
     
     new_obs[1:5] = obs[10:14]
-    # new_obs[6] = stage
-    # new_obs[7] = substage
+    
+    new_obs[5:9] = past_obs[1:5]
     
     return tuple(new_obs)
 
@@ -94,7 +89,9 @@ def train_agent(agent_file, env_config, render=False):
         stage = 0
         substage = 0
         
-        obs = refine_obs(obs, stage, substage)
+        destiny = -1
+        
+        obs = refine_obs(obs, stage, substage, np.zeros(9))
     
         while not done:
             
@@ -113,34 +110,36 @@ def train_agent(agent_file, env_config, render=False):
 
             next_obs, reward, done, _ = env.step(action)
             
-            reached = 0
-            if(stage < 2):
-                reached = next_obs[14]
-            else:
-                reached = next_obs[15]
+            reached1 = 0
+            reached2 = 0
+            reached1 = next_obs[14]
+            reached2 = next_obs[15]
             
-            temp_obs = refine_obs(next_obs, stage, substage)
+            temp_obs = refine_obs(next_obs, stage, substage, obs)
             step_count += 1
 
             if(stage == 0):
                 if(temp_obs[0] == (0, 0)):
-                    reward += 3.0
-                    if(reached == 1):
+                    reward += 100.0
+                    if(reached2 == 1):
+                        destiny = substage
+                    if(reached1 == 1):
                         stage = 1
                     else:
                         substage += 1
             elif(stage == 1):
                 stage = 2
-                substage = 0
+                if(destiny != -1):
+                    substage = destiny
             elif(stage == 2):
                 if(temp_obs[0] == (0, 0)):
-                    reward += 3.0
-                    if(reached == 1):
+                    reward += 100.0
+                    if(reached2 == 1):
                         stage = 3
                     else:
                         substage += 1
             
-            next_obs = refine_obs(next_obs, stage, substage)
+            next_obs = refine_obs(next_obs, stage, substage, obs)
             
             if (not prev_pickup) and env.passenger_picked_up:
                 prev_pickup = True
