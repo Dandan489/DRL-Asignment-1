@@ -25,9 +25,9 @@ def random_pick(obs):
     possible_actions = [0, 1, 2, 3]
                 
     if obs[10]:
-        possible_actions.remove(0)
-    if obs[11]:
         possible_actions.remove(1)
+    if obs[11]:
+        possible_actions.remove(0)
     if obs[12]:
         possible_actions.remove(2)
     if obs[13]:
@@ -86,6 +86,17 @@ def get_action(obs):
     
     temp_obs = refine_obs(obs, stage, substage)
     
+    possible_actions = [0, 1, 2, 3]
+                
+    if obs[10]:
+        possible_actions.remove(1)
+    if obs[11]:
+        possible_actions.remove(0)
+    if obs[12]:
+        possible_actions.remove(2)
+    if obs[13]:
+        possible_actions.remove(3)
+    
     if(stage == 0):
         if(temp_obs[0] == (0, 0)):
             if(reached == 1):
@@ -112,7 +123,7 @@ def get_action(obs):
     else:
         if(ref_obs in Q_table):
             action = np.argmax(Q_table[ref_obs])
-            if np.random.rand() < 0.1:
+            if (np.random.rand() < 0.1) or (action not in possible_actions):
                 action = random_pick(obs)
         else:
             action = random_pick(obs)
