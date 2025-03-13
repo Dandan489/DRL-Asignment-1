@@ -23,17 +23,26 @@ past_obs = np.zeros(9)
 destiny = -1
 last_action = 0
 
-def random_pick(obs):
+def random_pick(obs, last_action):
     possible_actions = [0, 1, 2, 3]
     
     action = 0
-    if obs[10]==1:
+    if last_action==0:
+        action = 1
+    if last_action==1:
+        action = 0
+    if last_action==3:
+        action = 2
+    if last_action==2:
+        action = 3
+    
+    if obs[10]==1 or last_action==0:
         possible_actions.remove(1)  
-    if obs[11]==1:
+    if obs[11]==1 or last_action==1:
         possible_actions.remove(0)
-    if obs[12]==1:
+    if obs[12]==1 or last_action==3:
         possible_actions.remove(2)
-    if obs[13]==1:
+    if obs[13]==1 or last_action==2:
         possible_actions.remove(3)  
     
     if possible_actions:
