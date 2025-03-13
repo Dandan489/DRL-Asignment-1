@@ -81,16 +81,11 @@ class SimpleTaxiEnv():
         next_row, next_col = taxi_row, taxi_col
         reward = 0
         if action == 0 :  # Move Down
-        reward = 0
-        if action == 0 :  # Move Down
             next_row += 1
-        elif action == 1:  # Move Up
         elif action == 1:  # Move Up
             next_row -= 1
         elif action == 2:  # Move Right
-        elif action == 2:  # Move Right
             next_col += 1
-        elif action == 3:  # Move Left
         elif action == 3:  # Move Left
             next_col -= 1
         
@@ -126,24 +121,6 @@ class SimpleTaxiEnv():
                 self.taxi_pos = (next_row, next_col)
                 if self.passenger_picked_up:
                     self.passenger_loc = self.taxi_pos
-        else:
-            if action == 4:  # PICKUP
-                if self.taxi_pos == self.passenger_loc:
-                    self.passenger_picked_up = True
-                    self.passenger_loc = self.taxi_pos  
-                else:
-                    reward = -10  
-            elif action == 5:  # DROPOFF
-                if self.passenger_picked_up:
-                    if self.taxi_pos == self.destination:
-                        reward += 50
-                        return self.get_state(), reward -0.1, True, {}
-                    else:
-                        reward -=10
-                    self.passenger_picked_up = False
-                    self.passenger_loc = self.taxi_pos
-                else:
-                    reward -=10
                     
         reward -= 0.1  
 
@@ -187,11 +164,6 @@ class SimpleTaxiEnv():
         
         state = (taxi_row, taxi_col, self.stations[0][0],self.stations[0][1] ,self.stations[1][0],self.stations[1][1],self.stations[2][0],self.stations[2][1],self.stations[3][0],self.stations[3][1],obstacle_north, obstacle_south, obstacle_east, obstacle_west, passenger_look, destination_look)
         return state
-            return self.get_state(), reward -10, True, {}
-
-        
-
-        return self.get_state(), reward, False, {}
 
     def get_state(self):
         """Return the current environment state."""

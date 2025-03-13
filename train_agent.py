@@ -34,7 +34,6 @@ def comp_diff(x, y):
 # target relative position
 # walls * 4
 
-
 def refine_obs(obs, stage, substage, past_obs):
     taxi_x = obs[0]
     taxi_y = obs[1]
@@ -62,8 +61,6 @@ def train_agent(agent_file, env_config, render=False):
     spec.loader.exec_module(student_agent)
 
     env = SimpleTaxiEnv(**env_config)
-
-    stations = [(0, 0), (0, 4), (4, 0), (4,4)]
     
     q_table = {}
     episodes = 100000
@@ -110,8 +107,6 @@ def train_agent(agent_file, env_config, render=False):
 
             next_obs, reward, done, _ = env.step(action)
             
-            reached1 = 0
-            reached2 = 0
             reached1 = next_obs[14]
             reached2 = next_obs[15]
             
