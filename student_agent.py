@@ -139,6 +139,8 @@ def get_action(obs):
     else:
         if(ref_obs in Q_table):
             action = np.argmax(Q_table[ref_obs])
+            if (action not in possible_actions) or action == 5 or action == 4:
+                action = random_pick(obs)
         else:
             action = random_pick(obs)
     
