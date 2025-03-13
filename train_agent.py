@@ -32,13 +32,14 @@ def comp_diff(x, y):
 
 # state:
 # target relative position
+# last action
 # walls * 4
 
-def refine_obs(obs, stage, substage, past_obs):
+def refine_obs(obs, stage, substage, past_obs, last_action):
     taxi_x = obs[0]
     taxi_y = obs[1]
     
-    new_obs = [0] * 13
+    new_obs = [0] * 6
     
     if(substage == 0):
         new_obs[0] = (comp_diff(taxi_x, obs[2]), comp_diff(taxi_y, obs[3]))
@@ -49,9 +50,11 @@ def refine_obs(obs, stage, substage, past_obs):
     else:
         new_obs[0] = (comp_diff(taxi_x, obs[8]), comp_diff(taxi_y, obs[9]))
     
-    new_obs[1:5] = obs[10:14]
+    new_obs[1] = last_action
     
-    new_obs[5:13] = past_obs[1:9]
+    new_obs[2:6] = obs[10:14]
+    
+    # new_obs[6:11] = past_obs[1:6]
     
     return tuple(new_obs)
 
@@ -86,8 +89,9 @@ def train_agent(agent_file, env_config, render=False):
         stage = 0
         substage = 0
         destiny = -1
+        last_action = 0
         
-        obs = refine_obs(obs, stage, substage, np.zeros(9))
+        obs = refine_obs(obs, stage, substage, np.zeros(9), 0)
     
         while not done:
             
@@ -105,11 +109,12 @@ def train_agent(agent_file, env_config, render=False):
                 action = 5
 
             next_obs, reward, done, _ = env.step(action)
+            last_action = action
             
             reached1 = next_obs[14]
             reached2 = next_obs[15]
             
-            temp_obs = refine_obs(next_obs, stage, substage, obs)
+            temp_obs = refine_obs(next_obs, stage, substage, obs, last_action)
             step_count += 1
 
             if(stage == 0):
@@ -133,7 +138,9 @@ def train_agent(agent_file, env_config, render=False):
                     else:
                         substage += 1
             
-            next_obs = refine_obs(next_obs, stage, substage, obs)
+            reward -= 0.01
+            
+            next_obs = refine_obs(next_obs, stage, substage, obs, last_action)
             
             if (not prev_pickup) and env.passenger_picked_up:
                 prev_pickup = True

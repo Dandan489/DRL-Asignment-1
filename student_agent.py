@@ -21,6 +21,7 @@ stage = 0
 substage = 0
 past_obs = np.zeros(9)
 destiny = -1
+last_action = 0
 
 def random_pick(obs):
     possible_actions = [0, 1, 2, 3]
@@ -47,11 +48,11 @@ def comp_diff(x, y):
     ret = x - y
     return ret
 
-def refine_obs(obs, stage, substage, past_obs):
+def refine_obs(obs, stage, substage, past_obs, last_action):
     taxi_x = obs[0]
     taxi_y = obs[1]
     
-    new_obs = [0] * 13
+    new_obs = [0] * 6
     
     if(substage == 0):
         new_obs[0] = (comp_diff(taxi_x, obs[2]), comp_diff(taxi_y, obs[3]))
@@ -61,10 +62,12 @@ def refine_obs(obs, stage, substage, past_obs):
         new_obs[0] = (comp_diff(taxi_x, obs[6]), comp_diff(taxi_y, obs[7]))
     else:
         new_obs[0] = (comp_diff(taxi_x, obs[8]), comp_diff(taxi_y, obs[9]))
-        
-    new_obs[1:5] = obs[10:14]
     
-    new_obs[5:13] = past_obs[1:9]
+    new_obs[1] = last_action
+    
+    new_obs[2:6] = obs[10:14]
+    
+    # new_obs[6:11] = past_obs[1:6]
     
     return tuple(new_obs)
 
@@ -79,6 +82,7 @@ def get_action(obs):
     global substage
     global past_obs
     global destiny
+    global last_action
     if stage is None:
         stage = 0
     if substage is None:
@@ -87,11 +91,13 @@ def get_action(obs):
         past_obs = np.zeros(9)
     if destiny is None:
         destiny = -1
+    if last_action is None:
+        last_action = 0
     
     reached1 = obs[14]
     reached2 = obs[15]
     
-    temp_obs = refine_obs(obs, stage, substage, past_obs)
+    temp_obs = refine_obs(obs, stage, substage, past_obs, last_action)
     
     possible_actions = [0, 1, 2, 3]
                 
@@ -123,7 +129,7 @@ def get_action(obs):
             else:
                 substage += 1
     
-    ref_obs = refine_obs(obs, stage, substage, past_obs)
+    ref_obs = refine_obs(obs, stage, substage, past_obs, last_action)
 
     action = 0
     if stage == 1:
@@ -137,6 +143,7 @@ def get_action(obs):
             action = random_pick(obs)
     
     past_obs = obs
+    last_action = action
     
     return action
 
