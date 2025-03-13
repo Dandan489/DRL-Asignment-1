@@ -144,7 +144,7 @@ def random_pick(obs):
 
 def get_action(obs):
     action = random_pick(obs)
-    print(obs, action)
+    # print(obs, action)
     return action
 
 # def get_action(obs):
