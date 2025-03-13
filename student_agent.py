@@ -51,7 +51,7 @@ def refine_obs(obs, stage, substage, past_obs):
     taxi_x = obs[0]
     taxi_y = obs[1]
     
-    new_obs = [0] * 9
+    new_obs = [0] * 13
     
     if(substage == 0):
         new_obs[0] = (comp_diff(taxi_x, obs[2]), comp_diff(taxi_y, obs[3]))
@@ -64,7 +64,7 @@ def refine_obs(obs, stage, substage, past_obs):
         
     new_obs[1:5] = obs[10:14]
     
-    new_obs[5:9] = past_obs[1:5]
+    new_obs[5:13] = past_obs[1:9]
     
     return tuple(new_obs)
 
