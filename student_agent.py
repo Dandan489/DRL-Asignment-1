@@ -13,7 +13,6 @@
 import numpy as np
 import pickle
 import random
-import gym
 
 # with open("data.pkl", "rb") as f:
 #     Q_table = pickle.load(f)
