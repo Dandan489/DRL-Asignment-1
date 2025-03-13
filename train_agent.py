@@ -70,7 +70,7 @@ def train_agent(agent_file, env_config, render=False):
     epsilon = 1
     rewards_per_episode = []
     
-    alpha = 0.1
+    alpha = 0.05
     gamma = 0.99
     epsilon_end = 0.1
     decay_rate = 0.99999
@@ -119,7 +119,7 @@ def train_agent(agent_file, env_config, render=False):
 
             if(stage == 0):
                 if(temp_obs[0] == (0, 0)):
-                    reward += 100.0
+                    reward += 200.0
                     if(reached2 == 1):
                         destiny = substage
                     if(reached1 == 1):
@@ -132,7 +132,7 @@ def train_agent(agent_file, env_config, render=False):
                     substage = destiny
             elif(stage == 2):
                 if(temp_obs[0] == (0, 0)):
-                    reward += 100.0
+                    reward += 200.0
                     if(reached2 == 1):
                         stage = 3
                     else:
