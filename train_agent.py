@@ -35,6 +35,33 @@ def comp_diff(x, y):
 # last action
 # walls * 4
 
+def random_pick(obs, last_action):
+    possible_actions = [0, 1, 2, 3]
+    
+    action = 0
+    if last_action==0:
+        action = 1
+    if last_action==1:
+        action = 0
+    if last_action==3:
+        action = 2
+    if last_action==2:
+        action = 3
+    
+    if obs[2]==1 or last_action==0:
+        possible_actions.remove(1)  
+    if obs[3]==1 or last_action==1:
+        possible_actions.remove(0)
+    if obs[4]==1 or last_action==3:
+        possible_actions.remove(2)
+    if obs[5]==1 or last_action==2:
+        possible_actions.remove(3)  
+    
+    if possible_actions:
+        action = random.choice(possible_actions)
+    
+    return action
+
 def refine_obs(obs, stage, substage, past_obs, last_action, pickup):
     taxi_x = obs[0]
     taxi_y = obs[1]
@@ -100,7 +127,7 @@ def train_agent(agent_file, env_config, render=False):
         while not done:
             
             if np.random.rand() < epsilon:
-                action = random.choice([0, 1, 2, 3])
+                action = random_pick(obs, last_action)
             else:
                 action = np.argmax(q_table[obs])
                 
