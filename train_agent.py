@@ -35,11 +35,11 @@ def comp_diff(x, y):
 # last action
 # walls * 4
 
-def refine_obs(obs, stage, substage, past_obs, last_action):
+def refine_obs(obs, stage, substage, past_obs, last_action, pickup):
     taxi_x = obs[0]
     taxi_y = obs[1]
     
-    new_obs = [0] * 6
+    new_obs = [0] * 7
     
     if(substage == 0):
         new_obs[0] = (comp_diff(taxi_x, obs[2]), comp_diff(taxi_y, obs[3]))
@@ -54,6 +54,8 @@ def refine_obs(obs, stage, substage, past_obs, last_action):
     
     new_obs[2:6] = obs[10:14]
     
+    new_obs[6] = pickup
+    
     # new_obs[6:11] = past_obs[1:6]
     
     return tuple(new_obs)
@@ -66,14 +68,14 @@ def train_agent(agent_file, env_config, render=False):
     env = SimpleTaxiEnv(**env_config)
     
     q_table = {}
-    episodes = 200000
+    episodes = 100000
     epsilon = 1
     rewards_per_episode = []
     
-    alpha = 0.05
+    alpha = 0.1
     gamma = 0.99
     epsilon_end = 0.1
-    decay_rate = 0.99999
+    decay_rate = 0.99998
     doneCnt = 0
     pickCnt = 0
     
@@ -90,13 +92,12 @@ def train_agent(agent_file, env_config, render=False):
         substage = 0
         destiny = -1
         last_action = 0
+        hit_wall = 0
         
-        obs = refine_obs(obs, stage, substage, np.zeros(9), 0)
+        obs = refine_obs(obs, stage, substage, np.zeros(9), 0, prev_pickup)
+        q_table[obs] = np.array([0.0, 0.0, 0.0, 0.0])
     
         while not done:
-            
-            if obs not in q_table:
-                q_table[obs] = np.array([0.0, 0.0, 0.0, 0.0])
             
             if np.random.rand() < epsilon:
                 action = random.choice([0, 1, 2, 3])
@@ -107,57 +108,71 @@ def train_agent(agent_file, env_config, render=False):
                 action = 4
             elif stage == 3:
                 action = 5
-
+            
             next_obs, reward, done, _ = env.step(action)
             last_action = action
+            
+            if(action < 4 and reward == -5.1):
+                reward = -100.0
+                hit_wall += 1
             
             reached1 = next_obs[14]
             reached2 = next_obs[15]
             
-            temp_obs = refine_obs(next_obs, stage, substage, obs, last_action)
+            temp_obs = refine_obs(next_obs, stage, substage, obs, last_action, prev_pickup)
             step_count += 1
 
             if(stage == 0):
                 if(temp_obs[0] == (0, 0)):
-                    reward += 200.0
+                    reward += 100.0
                     if(reached2 == 1):
                         destiny = substage
                     if(reached1 == 1):
                         stage = 1
                     else:
                         substage += 1
+                if(action == 4 or action == 5):
+                    reward -= 10000.0
             elif(stage == 1):
+                if not env.passenger_picked_up:
+                    break
                 stage = 2
                 if(destiny != -1):
                     substage = destiny
             elif(stage == 2):
                 if(temp_obs[0] == (0, 0)):
-                    reward += 200.0
+                    reward += 100.0
                     if(reached2 == 1):
                         stage = 3
                     else:
                         substage += 1
+                if(action == 4 or action == 5):
+                    reward -= 10000.0
             
             reward -= 0.01
             
-            next_obs = refine_obs(next_obs, stage, substage, obs, last_action)
-            
             if (not prev_pickup) and env.passenger_picked_up:
                 prev_pickup = True
+                reward += 200.0
                 pickCnt += 1
             
             if(done):
+                reward += 300.0
                 doneCnt += 1
+                
+            next_obs = refine_obs(next_obs, stage, substage, obs, last_action, prev_pickup)
             
             total_reward += reward
             
             if next_obs not in q_table:
-                q_table[next_obs] = np.array([0.0, 0.0, 0.0, 0.0])
+                if(stage == 1 or stage == 3):
+                    q_table[next_obs] = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+                else:
+                    q_table[next_obs] = np.array([0.0, 0.0, 0.0, 0.0])
 
             # TODO: Apply the Q-learning update rule (Bellman equation).
-            if(action == 0 or action == 1 or action == 2 or action == 3):
-                q_table[obs][action] = (1 - alpha) * q_table[obs][action] + \
-                                     alpha * (reward + gamma * np.max(q_table[next_obs]))
+            q_table[obs][action] = (1 - alpha) * q_table[obs][action] + \
+                                    alpha * (reward + gamma * np.max(q_table[next_obs]))
 
             # TODO: Update the state to the next state.
             obs = next_obs
@@ -173,9 +188,10 @@ def train_agent(agent_file, env_config, render=False):
         if (episode + 1) % 100 == 0:
             avg_reward = np.mean(rewards_per_episode[-100:])
             print(f"Episode {episode + 1}/{episodes}, Avg Reward: {avg_reward:.4f}, Epsilon: {epsilon:.3f}")
-            print("score:", pickCnt, doneCnt)
+            print("score:", pickCnt, doneCnt, hit_wall)
             pickCnt = 0
             doneCnt = 0
+            hit_wall = 0
     
     with open("data.pkl", "wb") as file:
         pickle.dump(q_table, file)

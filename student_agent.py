@@ -21,6 +21,7 @@ stage = 0
 substage = 0
 past_obs = np.zeros(9)
 destiny = -1
+prev_pickup = 0
 last_action = 0
 
 def random_pick(obs, last_action):
@@ -57,11 +58,11 @@ def comp_diff(x, y):
     ret = x - y
     return ret
 
-def refine_obs(obs, stage, substage, past_obs, last_action):
+def refine_obs(obs, stage, substage, past_obs, last_action, pickup):
     taxi_x = obs[0]
     taxi_y = obs[1]
     
-    new_obs = [0] * 6
+    new_obs = [0] * 7
     
     if(substage == 0):
         new_obs[0] = (comp_diff(taxi_x, obs[2]), comp_diff(taxi_y, obs[3]))
@@ -75,6 +76,10 @@ def refine_obs(obs, stage, substage, past_obs, last_action):
     new_obs[1] = last_action
     
     new_obs[2:6] = obs[10:14]
+    
+    new_obs[6] = pickup
+    
+    # new_obs[6] = stage
     
     # new_obs[6:11] = past_obs[1:6]
     
@@ -92,6 +97,7 @@ def get_action(obs):
     global past_obs
     global destiny
     global last_action
+    global prev_pickup
     if stage is None:
         stage = 0
     if substage is None:
@@ -100,24 +106,15 @@ def get_action(obs):
         past_obs = np.zeros(9)
     if destiny is None:
         destiny = -1
+    if prev_pickup is None:
+        prev_pickup = 0
     if last_action is None:
         last_action = 0
     
     reached1 = obs[14]
     reached2 = obs[15]
     
-    temp_obs = refine_obs(obs, stage, substage, past_obs, last_action)
-    
-    possible_actions = [0, 1, 2, 3]
-                
-    if obs[10]:
-        possible_actions.remove(1)
-    if obs[11]:
-        possible_actions.remove(0)
-    if obs[12]:
-        possible_actions.remove(2)
-    if obs[13]:
-        possible_actions.remove(3)
+    temp_obs = refine_obs(obs, stage, substage, past_obs, last_action, prev_pickup)
     
     if(stage == 0):
         if(temp_obs[0] == (0, 0)):
@@ -131,6 +128,7 @@ def get_action(obs):
         stage = 2
         if(destiny != -1):
             substage = destiny
+        prev_pickup = 1
     elif(stage == 2):
         if(temp_obs[0] == (0, 0)):
             if(reached2 == 1):
@@ -138,26 +136,22 @@ def get_action(obs):
             else:
                 substage += 1
     
-    ref_obs = refine_obs(obs, stage, substage, past_obs, last_action)
+    ref_obs = refine_obs(obs, stage, substage, past_obs, last_action, prev_pickup)
 
     action = 0
-    if stage == 1:
-        action = 4
-    elif stage == 3:
-        action = 5
-    else:
-        if(ref_obs in Q_table):
-            action = np.argmax(Q_table[ref_obs])
-            if (np.random.rand() < 0.14) or (action not in possible_actions) or action == 5 or action == 4:
-                action = random_pick(obs, last_action)
-        else:
+    # if stage == 1:
+    #     action = 4
+    # elif stage == 3:
+    #     action = 5
+    # else:
+    if(ref_obs in Q_table):
+        action = np.argmax(Q_table[ref_obs])
+        if (np.random.rand() < 0.1):
             action = random_pick(obs, last_action)
+    else:
+        action = random_pick(obs, last_action)
     
     past_obs = obs
     last_action = action
-    
+    print(Q_table[ref_obs])
     return action
-
-# def get_action(obs):
-#     action = random_pick(obs)
-#     return action
