@@ -146,7 +146,7 @@ def get_action(obs):
     # else:
     if(ref_obs in Q_table):
         action = np.argmax(Q_table[ref_obs])
-        if (np.random.rand() < 0.1): # or action == 4 or action == 5
+        if (np.random.rand() < 0.1) or action == 4 or action == 5: 
             action = random_pick(obs, last_action)
     else:
         action = random_pick(obs, last_action)
