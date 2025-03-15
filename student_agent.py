@@ -153,5 +153,5 @@ def get_action(obs):
     
     past_obs = obs
     last_action = action
-    print(Q_table[ref_obs])
+    # print(Q_table[ref_obs])
     return action
