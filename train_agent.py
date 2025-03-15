@@ -34,6 +34,8 @@ def comp_diff(x, y):
 # target relative position
 # last action
 # walls * 4
+# if pickup
+# past walls * 4
 
 def random_pick(obs, last_action):
     possible_actions = [0, 1, 2, 3]
@@ -66,7 +68,7 @@ def refine_obs(obs, stage, substage, past_obs, last_action, pickup):
     taxi_x = obs[0]
     taxi_y = obs[1]
     
-    new_obs = [0] * 7
+    new_obs = [0] * 11
     
     if(substage == 0):
         new_obs[0] = (comp_diff(taxi_x, obs[2]), comp_diff(taxi_y, obs[3]))
@@ -83,7 +85,7 @@ def refine_obs(obs, stage, substage, past_obs, last_action, pickup):
     
     new_obs[6] = pickup
     
-    # new_obs[6:11] = past_obs[1:6]
+    new_obs[7:11] = past_obs[2:6]
     
     return tuple(new_obs)
 
@@ -159,9 +161,6 @@ def train_agent(agent_file, env_config, render=False):
                         stage = 1
                     else:
                         substage += 1
-                if(action == 4 or action == 5):
-                    reward -= 10000.0
-                    bad_drop += 1
             elif(stage == 1):
                 if not env.passenger_picked_up:
                     break
@@ -175,13 +174,6 @@ def train_agent(agent_file, env_config, render=False):
                         stage = 3
                     else:
                         substage += 1
-                if(action == 4 or action == 5):
-                    reward -= 10000.0
-                    bad_drop += 1
-            
-            if(action == 5 and not done):
-                reward -= 10000.0
-                bad_drop += 1
             
             reward -= 0.01
             

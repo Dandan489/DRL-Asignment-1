@@ -62,7 +62,7 @@ def refine_obs(obs, stage, substage, past_obs, last_action, pickup):
     taxi_x = obs[0]
     taxi_y = obs[1]
     
-    new_obs = [0] * 7
+    new_obs = [0] * 11
     
     if(substage == 0):
         new_obs[0] = (comp_diff(taxi_x, obs[2]), comp_diff(taxi_y, obs[3]))
@@ -79,9 +79,7 @@ def refine_obs(obs, stage, substage, past_obs, last_action, pickup):
     
     new_obs[6] = pickup
     
-    # new_obs[6] = stage
-    
-    # new_obs[6:11] = past_obs[1:6]
+    new_obs[7:11] = past_obs[2:6]
     
     return tuple(new_obs)
 
@@ -103,7 +101,7 @@ def get_action(obs):
     if substage is None:
         substage = 0
     if past_obs is None:
-        past_obs = np.zeros(9)
+        past_obs = np.zeros(11)
     if destiny is None:
         destiny = -1
     if prev_pickup is None:
@@ -137,6 +135,7 @@ def get_action(obs):
                 substage += 1
     
     ref_obs = refine_obs(obs, stage, substage, past_obs, last_action, prev_pickup)
+    print(ref_obs)
 
     action = 0
     if(ref_obs in Q_table):
@@ -146,6 +145,6 @@ def get_action(obs):
     else:
         action = random_pick(obs, last_action)
     
-    past_obs = obs
+    past_obs = ref_obs
     last_action = action
     return action
