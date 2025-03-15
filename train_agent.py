@@ -95,14 +95,14 @@ def train_agent(agent_file, env_config, render=False):
     env = SimpleTaxiEnv(**env_config)
     
     q_table = {}
-    episodes = 200000
+    episodes = 500000
     epsilon = 1
     rewards_per_episode = []
     
-    alpha = 0.05
+    alpha = 0.01
     gamma = 0.99
     epsilon_end = 0.1
-    decay_rate = 0.99999
+    decay_rate = 0.999995
     doneCnt = 0
     pickCnt = 0
     hit_wall = 0
