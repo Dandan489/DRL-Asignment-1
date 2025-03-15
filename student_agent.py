@@ -156,12 +156,11 @@ def get_action(obs):
                 substage = find_closest(obs, visited)
     
     ref_obs = refine_obs(obs, stage, substage, past_obs, last_action, prev_pickup)
-    print(ref_obs, substage)
 
     action = 0
     if(ref_obs in Q_table):
         action = np.argmax(Q_table[ref_obs])
-        if (np.random.rand() < 0.14 and action != 4 and action != 5): 
+        if (np.random.rand() < 0.125 and action != 4 and action != 5): 
             action = random_pick(obs, last_action)
     else:
         action = random_pick(obs, last_action)
