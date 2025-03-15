@@ -135,7 +135,6 @@ def get_action(obs):
                 substage += 1
     
     ref_obs = refine_obs(obs, stage, substage, past_obs, last_action, prev_pickup)
-    print(ref_obs)
 
     action = 0
     if(ref_obs in Q_table):
