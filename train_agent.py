@@ -105,6 +105,8 @@ def train_agent(agent_file, env_config, render=False):
     decay_rate = 0.99999
     doneCnt = 0
     pickCnt = 0
+    hit_wall = 0
+    bad_drop = 0
     
     for episode in range(episodes):
         obs, _ = env.reset()
@@ -119,7 +121,6 @@ def train_agent(agent_file, env_config, render=False):
         substage = 0
         destiny = -1
         last_action = 0
-        hit_wall = 0
         
         obs = refine_obs(obs, stage, substage, np.zeros(9), 0, prev_pickup)
         q_table[obs] = np.array([0.0, 0.0, 0.0, 0.0])
@@ -160,6 +161,7 @@ def train_agent(agent_file, env_config, render=False):
                         substage += 1
                 if(action == 4 or action == 5):
                     reward -= 10000.0
+                    bad_drop += 1
             elif(stage == 1):
                 if not env.passenger_picked_up:
                     break
@@ -175,6 +177,11 @@ def train_agent(agent_file, env_config, render=False):
                         substage += 1
                 if(action == 4 or action == 5):
                     reward -= 10000.0
+                    bad_drop += 1
+            
+            if(action == 5 and not done):
+                reward -= 10000.0
+                bad_drop += 1
             
             reward -= 0.01
             
@@ -215,10 +222,11 @@ def train_agent(agent_file, env_config, render=False):
         if (episode + 1) % 100 == 0:
             avg_reward = np.mean(rewards_per_episode[-100:])
             print(f"Episode {episode + 1}/{episodes}, Avg Reward: {avg_reward:.4f}, Epsilon: {epsilon:.3f}")
-            print("score:", pickCnt, doneCnt, hit_wall)
+            print("score:", pickCnt, doneCnt, hit_wall, bad_drop)
             pickCnt = 0
             doneCnt = 0
             hit_wall = 0
+            bad_drop = 0
     
     with open("data.pkl", "wb") as file:
         pickle.dump(q_table, file)

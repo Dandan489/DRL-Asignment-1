@@ -139,19 +139,19 @@ def get_action(obs):
     ref_obs = refine_obs(obs, stage, substage, past_obs, last_action, prev_pickup)
 
     action = 0
-    if stage == 1:
-        action = 4
-    elif stage == 3:
-        action = 5
-    else:
-        if(ref_obs in Q_table):
-            action = np.argmax(Q_table[ref_obs])
-            if (np.random.rand() < 0.14) or action == 4 or action == 5: 
-                action = random_pick(obs, last_action)
-        else:
+    # if stage == 1:
+    #     action = 4
+    # elif stage == 3:
+    #     action = 5
+    # else:
+    if(ref_obs in Q_table):
+        action = np.argmax(Q_table[ref_obs])
+        if (np.random.rand() < 0.14): 
             action = random_pick(obs, last_action)
+    else:
+        action = random_pick(obs, last_action)
     
     past_obs = obs
     last_action = action
-    # print(Q_table[ref_obs])
+    print(Q_table[ref_obs])
     return action

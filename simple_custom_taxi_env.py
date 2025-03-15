@@ -36,13 +36,20 @@ class SimpleTaxiEnv():
         
         self.stations = list()
         
+        def is_adjacent(pos1, pos2):
+            return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1]) == 1
+        
         available_positions = [
             (x, y) for x in range(self.grid_size) for y in range(self.grid_size)
             if (x, y) not in self.stations and (x, y) not in self.obstacles
         ]
         
-        self.stations = list(random.sample(available_positions, 4))
-        
+        while len(self.stations) < 4:
+            candidate = random.choice(list(available_positions))
+            if all(not is_adjacent(candidate, s) for s in self.stations):
+                self.stations.append(candidate)
+                available_positions.remove(candidate)
+    
         available_positions = [
             (x, y) for x in range(self.grid_size) for y in range(self.grid_size)
             if (x, y) not in self.stations and (x, y) not in self.obstacles
