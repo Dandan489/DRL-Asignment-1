@@ -54,9 +54,9 @@ def random_pick(obs, last_action):
 
 def comp_diff(x, y):
     ret = 0
-    # if x > y: ret = 1
-    # elif x < y: ret = -1
-    ret = x - y
+    if x > y: ret = 1
+    elif x < y: ret = -1
+    # ret = x - y
     return ret
 
 def find_closest(obs, visited):

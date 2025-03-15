@@ -6,12 +6,13 @@ from IPython.display import clear_output
 from simple_custom_taxi_env import SimpleTaxiEnv
 import random
 import pickle
+import matplotlib.pyplot as plt
 
 def comp_diff(x, y):
     ret = 0
-    # if x > y: ret = 1
-    # elif x < y: ret = -1
-    ret = x - y
+    if x > y: ret = 1
+    elif x < y: ret = -1
+    # ret = x - y
     return ret
 
 # stage 0: find passenger
@@ -109,6 +110,8 @@ def train_agent(agent_file, env_config, render=False):
     pickCnt = 0
     hit_wall = 0
     bad_drop = 0
+    
+    plotList = []
     
     for episode in range(episodes):
         obs, _ = env.reset()
@@ -211,8 +214,9 @@ def train_agent(agent_file, env_config, render=False):
         # TODO: Decay epsilon over time to gradually reduce exploration.
         epsilon = max(epsilon_end, epsilon * decay_rate)
         
-        if (episode + 1) % 100 == 0:
-            avg_reward = np.mean(rewards_per_episode[-100:])
+        if (episode + 1) % 1000 == 0:
+            avg_reward = np.mean(rewards_per_episode[-1000:])
+            plotList.append(avg_reward)
             print(f"Episode {episode + 1}/{episodes}, Avg Reward: {avg_reward:.4f}, Epsilon: {epsilon:.3f}")
             print("score:", pickCnt, doneCnt, hit_wall, bad_drop)
             pickCnt = 0
@@ -222,7 +226,13 @@ def train_agent(agent_file, env_config, render=False):
     
     with open("data.pkl", "wb") as file:
         pickle.dump(q_table, file)
-        
+    
+    plt.plot(plotList, marker='o', linestyle='-', color='b', label='Data')
+    plt.xlabel('Episode')
+    plt.ylabel('Average Score')
+    plt.title('Average Score over Episode')
+    plt.show()
+    
     return total_reward
 
 if __name__ == "__main__":
