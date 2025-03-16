@@ -6,29 +6,18 @@ from IPython.display import clear_output
 from simple_custom_taxi_env import SimpleTaxiEnv
 import random
 import pickle
-import matplotlib.pyplot as plt
 
 def comp_diff(x, y):
     ret = 0
     if x > y: ret = 1
     elif x < y: ret = -1
-    # ret = x - y
     return ret
 
 # stage 0: find passenger
-# 0-0: check R
-# 0-1: check G
-# 0-2: check Y
-# 0-3: check B
-# if located: 
+    # if located: 
 # stage 1: pickup passenger
-
 # stage 2: find destination
-# 2-0: check R
-# 2-1: check G
-# 2-2: check Y
-# 2-3: check B
-# if located: 
+    # if located: 
 # stage 3: dropoff passenger
 
 # state:
@@ -226,12 +215,6 @@ def train_agent(agent_file, env_config, render=False):
     
     with open("data.pkl", "wb") as file:
         pickle.dump(q_table, file)
-    
-    plt.plot(plotList, marker='o', linestyle='-', color='b', label='Data')
-    plt.xlabel('Episode')
-    plt.ylabel('Average Score')
-    plt.title('Average Score over Episode')
-    plt.show()
     
     return total_reward
 
